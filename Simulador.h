@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 #include <omp.h>
 #include <thread>
 #include <vector>

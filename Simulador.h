@@ -20,6 +20,10 @@ private:
 	float porcentajeInfectados;
 	int tamano;
 	int numeroNucleos;
+	int porcentajeEnfermas;
+	int porcentajeSanas;
+	int porcentajeInmunes;
+	int porcentajeMuertas;
 	std::vector< std::vector < std::vector < Persona* > > > personas;
 
 public:
@@ -27,6 +31,7 @@ public:
 	~Simulador();
 	int ejecutar(int tics);
 	void llenarMatriz();
-	void modificarEstados();
+	void modificarEstados(int tic);
 	void moverPersonas();
+	void imprimir();
 };

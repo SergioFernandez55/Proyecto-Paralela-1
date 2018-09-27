@@ -9,9 +9,12 @@ Simulador::Simulador(int numPersonas, float potenciaVirus, float probRecuperacio
 	this->probRecuperacion = probRecuperacion;
 	this->probMuerte = probMuerte;
 	this->porcentajeInfectados = porcentajeInfectados;
-	this->tamano = tamano - 1;
+	this->tamano = tamano;
 	this->personas.resize(numPersonas);
 	this->numeroNucleos = std::thread::hardware_concurrency();
+	personas.resize(tamano);
+	for (int columna = 0; columna < tamano; ++columna)
+		personas[columna].resize(tamano);
 }
 
 
@@ -22,8 +25,8 @@ Simulador::~Simulador()
 
 int Simulador::ejecutar(int tics)
 {
+	std::cout << "Este programa utilizara " << numeroNucleos << " nucleos." << std::endl;
 	this->llenarMatriz();
-#pragma omp parallel for num_threads(5)
 	for (int tic = 0; tic < tics; ++tic)
 	{
 		this->modificarEstados();
@@ -37,8 +40,9 @@ void Simulador::llenarMatriz()
 	int personasInfectadas = numPersonas * (porcentajeInfectados / 100);
 	int personasSanas = numPersonas - personasInfectadas;
 	srand(omp_get_thread_num() * 4 ^ time(NULL));
-
-#pragma omp parallel for num_threads(10)
+#if 1
+	std::cout << "Llenando con enfermos" << std::endl;
+#endif
 	for (int persona = 0; persona < personasInfectadas; persona++)
 	{
 		Persona* nuevo = new Persona(2);
@@ -48,27 +52,30 @@ void Simulador::llenarMatriz()
 		personas[x][y].push_back(nuevo);
 	}
 
-#pragma omp parallel for num_threads(10)
+#pragma omp parallel for num_threads(numeroNucleos*4)
 	for (int persona = 0; persona < personasSanas; persona++)
 	{
 		Persona* nuevo = new Persona(1);
 		int x = rand() % this->tamano;
 		int y = rand() % this->tamano;
+#pragma omp critical
 		personas[x][y].push_back(nuevo);
 	}
 }
 
 void Simulador::moverPersonas()
 {
-	for()
+
 }
 
 void Simulador::modificarEstados()
 {
+	omp_set_nested(1);
 	std::vector<int> listaEstados;
 	int cantEnfermos = 0;
+#pragma omp parallel for num_threads(numeroNucleos*2)
 	for (int fila = 0; fila < tamano; ++fila)
-	{
+#pragma omp parallel for num_threads(2)
 		for (int columna = 0; columna < tamano; ++columna)
 		{
 			if (!personas[fila][columna].empty())
@@ -106,5 +113,4 @@ void Simulador::modificarEstados()
 				}
 			}
 		}
-	}
 }
